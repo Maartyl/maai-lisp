@@ -17,8 +17,8 @@ import java.util.Objects;
  * @author maartyl
  */
 public class Symbol extends Obj {
-  public final String name;     //public for immutable; only used from 1 project; if I ever decide it's not ok, I can change it to getters everywhere; unlikely
-  public final String namespace;
+  private final String name;
+  private final String namespace;
 
   protected Symbol(String name, String namespace) {
     this.name = name;
@@ -72,3 +72,5 @@ public class Symbol extends Obj {
   }
 
 }
+
+//possible split to SymbolNS, rhat would include namespace, Symbol would always retrun null
