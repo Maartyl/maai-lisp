@@ -10,6 +10,10 @@
  */
 package maailisp.reader;
 
+import java.io.BufferedReader;
+import java.util.ArrayList;
+import maailisp.coll.Seq;
+
 /*
  the idae is this:
  upon meeting "start character" (depending on context), I will trigger new Reader, specific for given state, and that will
@@ -33,10 +37,78 @@ package maailisp.reader;
  ...........................^ string reader doesn't start ParenReaders etc.
  */
 
+/*
+ actual states:
+
+ with end:
+ - numerical : long
+ - numerical : double
+ - string
+ - char  : \a \newline
+ - list
+ - vector
+ - map
+ - comment
+
+ one time alter next token:
+ - hash (further dispatch) : #
+ - deref : @
+ - quote : '
+ - qualifiedQuote : `
+ - unquote : ~
+ - minus : -
+ - ERROR : anthing that just can't happen... (takes msg, position and throws exception)
+
+
+
+ */
+
 /**
  *
  * @author maartyl
  */
 public class MaaiReader {
+ //initialized with some reader settings... (if should expand this or that...)
+  //each subReader returns ...
 
+  /**
+   * reads s-expressions from given Reader
+   * <p>
+   * //@throws IOException
+   * @param r
+   * @return each object is a top-level s-expression read from stream r
+   */
+  public Seq<Object> read(BufferedReader r) {
+    PosReader prdr = new PosReader(r);
+
+    ArrayList<Object> buffer = new ArrayList<>();
+    genericReader(buffer, prdr);
+
+    return Seq.of(buffer.toArray()); 
+  }
+
+  private void genericReader(ArrayList<Object> buf, PosReader pr) {
+
+  }
+
+  /**
+   * <p>
+   * reads until given terminator
+   */
+  private void untilReader(ArrayList<Object> buf, PosReader pr, int terminator) {
+
+  }
+
+  private boolean isWhitespace(int ch) {
+    switch (ch) {
+    case ' ':
+    case '\n':
+    case '\t':
+    case ',':      //comma is considered whitespace
+    case '\u00A0': //nbsp
+      return true;
+    default: return false;
+
+    }
+  }
 }
