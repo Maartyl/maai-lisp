@@ -63,6 +63,10 @@ public class PosReader {
     return curChar;
   }
 
+  /**
+   * //@throws IOException
+   * @return read char in advanced position in underlying Reader
+   */
   public int readChar() {
     try {
       lastChar = curChar;
