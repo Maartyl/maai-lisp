@@ -21,8 +21,8 @@ import java.io.Reader;
  */
 public class PosReader {
   private final Reader rdr;
-  private int row = 0;
-  private int column = 0;
+  private int row = 1;   //first row is 1
+  private int column = 0;//first col is 1 (incremented upon reading first char)
 
   public PosReader(Reader rdr) {
     this.rdr = rdr;
