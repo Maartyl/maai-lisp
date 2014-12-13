@@ -67,7 +67,7 @@ public class PosReader {
    * //@throws IOException
    * @return read char in advanced position in underlying Reader
    */
-  public int readChar() {
+  public int readNextChar() {
     try {
       lastChar = curChar;
       curChar = rdr.read();

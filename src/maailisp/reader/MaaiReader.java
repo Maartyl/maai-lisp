@@ -15,11 +15,11 @@ import java.util.ArrayList;
 import maailisp.coll.Seq;
 
 /*
- the idae is this:
+ the idea is this:
  upon meeting "start character" (depending on context), I will trigger new Reader, specific for given state, and that will
- read that sub part; otherwise rest is string, theoretically could be just buffered and parsed by regex::
+ read that sub part; otherwise rest is string, theoretically could be just buffered and parsed by regex:: (not really)
 
- could be just functions instead of readers, but...
+ could be just functions instead of readers
 
  they all share some kind of "position state" instance thingy...
 
@@ -34,7 +34,7 @@ import maailisp.coll.Seq;
  .............^start KeywordReader (or symbol)
  ..................^start StringReader
  .........................^ start EscapeReader / skip exit
- ...........................^ string reader doesn't start ParenReaders etc.
+ ...........................^ stringReader doesn't start ParensReader etc.
  */
 
 /*
@@ -68,11 +68,15 @@ import maailisp.coll.Seq;
  * @author maartyl
  */
 public class MaaiReader {
- //initialized with some reader settings... (if should expand this or that...)
+  //initialized with some reader settings... (if should expand this or that...)
+  // : also namespace for qualified symbols
+  // :: improve namespace concept : make some default "script" contexts etc...
+  //
   //each subReader returns ...
 
   /**
    * reads s-expressions from given Reader
+   * I need this function to be lazy, but I don't know how to achieve it yet.
    * <p>
    * //@throws IOException
    * @param r
@@ -91,7 +95,12 @@ public class MaaiReader {
     untilReader(buf, pr, -1); //just read to end
   }
 
+  /**
+   * not lazy. (and shouldn't... can't be: stateful reader)
+   */
   private Seq<Object> listReader(PosReader pr) {
+    int row = pr.getRow();
+    int col = pr.getColumn();
     ArrayList<Object> buf = new ArrayList<>();
     untilReader(buf, pr, ')');
     return Seq.of(buf.toArray());// TODO: change: special seq: counted and info about position
@@ -101,49 +110,55 @@ public class MaaiReader {
    * <p>
    * reads until given terminator, adding each found object into buffer
    */
-  private void untilReader(ArrayList<Object> buf, PosReader pr, int terminator) {
+  private void untilReader(ArrayList<Object> buf, PosReader pr, final int terminator) {
     int ch;
 
-    while ((ch = skipWhitespace(pr)) != terminator) {
-      switch (ch) {
-      case '(':
-        buf.add(listReader(pr)); //read list and add into buffer
-      break;
-      case '#':
-        break;
-      default:
-      //range checks
-
-      }
-
-      errReader("unmatched character: " + (char) ch);
+    //curChar:  ...45) ... I need the paren for both terminating the number (or symbol) and the whole list; etc.
+    while (pr.getCurrentChar() != terminator && (ch = skipWhitespace(pr)) != terminator) {
+      buf.add(recognizerReader(ch, pr));
     }
-
   }
 
-  private void errReader(String message) {
+  private Object recognizerReader(int firstChar, PosReader pr) {
+    switch (firstChar) {
+    case '(':
+      return (listReader(pr)); //read list and add into buffer
+    case '#':
+      break;
+    default:
+    //range checks (isAlphanumeric...)
+
+    }
+
+    errReader("unmatched character: " + (char) firstChar + "(" + firstChar + ")", pr);
+    return null;
+  }
+
+  private void errReader(String message, final PosReader pr) {
 //TODO: throw some custom error, that includes position etc.
+    // ... or just return "error" object? ... nope, I chose: First error is error policy; anything after: not necessarily.
+    // -> throw at first error, ignore rest.
   }
 
   /**
    * returns first non-whitespace char
    */
   private int skipWhitespace(PosReader pr) {
-    int ch = pr.readChar();
-    while (isWhitespace(ch)) ch = pr.readChar();
+    int ch = pr.readNextChar();
+    while (isWhitespace(ch)) ch = pr.readNextChar();
     return ch;
   }
 
   private boolean isWhitespace(int ch) {
-    switch (ch) {
-    case ' ':
-    case '\n':
-    case '\t':
-    case ',':      //comma is considered whitespace
-    case '\u00A0': //nbsp
-      return true;
-    default: return false;
-
-    }
+    return Character.isWhitespace(ch) || ch == ',';
+//    switch (ch) {
+//    case ' ':
+//    case '\n':
+//    case '\t':
+//    case ',':      //comma is considered whitespace
+//    case '\u00A0': //nbsp
+//      return true;
+//    default: return false;
+//    }
   }
 }
