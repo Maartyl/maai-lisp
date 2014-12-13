@@ -60,6 +60,8 @@ public class Symbol extends Obj {
   //add some method to resolve in context: keywords override to resove itself
 
   public static Symbol of(String s) {
+    if (s.charAt(0) == ':') return Keyword.of(s);
+
     if (s.length() == 1) return of(null, s);
     int slash = s.lastIndexOf('/');
     if (slash <= 0) return of(null, s);
@@ -67,7 +69,8 @@ public class Symbol extends Obj {
   }
 
   public static Symbol of(String ns, String nm) {
-    if (nm.charAt(0) == ':') return Keyword.of(ns, nm);
+    //if (nm.charAt(0) == ':') return Keyword.of(ns, nm);
+    assert nm != null;
     return new Symbol(ns, nm);
   }
 
