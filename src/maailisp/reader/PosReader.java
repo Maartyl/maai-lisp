@@ -23,6 +23,9 @@ public class PosReader {
   private final Reader rdr;
   private int row = 1;   //first row is 1
   private int column = 0;//first col is 1 (incremented upon reading first char)
+  private int pos = -1;  //the position in stream
+  private int lastChar = 0;
+  private int curChar = 0;
 
   public PosReader(Reader rdr) {
     this.rdr = rdr;
@@ -36,20 +39,45 @@ public class PosReader {
     return column;
   }
 
+  /**
+   * @return nth. in reader stream, indexed from 0
+   */
+  public int getPosition() {
+    return pos;
+  }
+
+
+  /**
+   * 
+   * @return the character read 1 before getCurrentChar() (or 0, if not yet set)
+   */
+  public int getLastChar() {
+    return lastChar;
+  }
+
+  /**
+   * 
+   * @return the most recently read character (or 0, if not yet set)
+   */
+  public int getCurrentChar() {
+    return curChar;
+  }
+
   public int readChar() {
-    int ch;
     try {
-      ch = rdr.read();
-      while (ch == '\r') ch = rdr.read(); //ignore \r: it's useless anyway (sorry, users of old Macs...)
+      lastChar = curChar;
+      curChar = rdr.read();
+      pos++;
+      while (curChar == '\r') curChar = rdr.read(); //ignore \r: it's useless anyway (sorry, users of old Macs...)
 
-      if (ch < 0) return ch;
+      if (curChar < 0) return curChar; //EOF: ignore (... EOS I guess)
 
-      if (ch == '\n') {
+      if (curChar == '\n') {
         row++;
         column = 0;
       } else column++;
 
-      return ch;
+      return curChar;
     } catch (IOException e) {
       throw maailisp.util.H.sneakyThrow(e); //just rethrow
     }
