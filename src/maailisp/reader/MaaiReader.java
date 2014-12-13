@@ -40,7 +40,7 @@ import maailisp.coll.Seq;
 /*
  actual states:
 
- with end:
+ with end:                   --introduces new buffer  /toka
  - numerical : long
  - numerical : double
  - string
@@ -50,7 +50,7 @@ import maailisp.coll.Seq;
  - map
  - comment
 
- one time alter next token:
+ one time alter next token:   --only changes state
  - hash (further dispatch) : #
  - deref : @
  - quote : '
@@ -82,21 +82,56 @@ public class MaaiReader {
     PosReader prdr = new PosReader(r);
 
     ArrayList<Object> buffer = new ArrayList<>();
-    genericReader(buffer, prdr);
+    topLevelReader(buffer, prdr);
 
-    return Seq.of(buffer.toArray()); 
+    return Seq.of(buffer.toArray()); //TODO: change : better implementation of seq: counted etc.
   }
 
-  private void genericReader(ArrayList<Object> buf, PosReader pr) {
+  private void topLevelReader(ArrayList<Object> buf, PosReader pr) {
+    untilReader(buf, pr, -1); //just read to end
+  }
 
+  private Seq<Object> listReader(PosReader pr) {
+    ArrayList<Object> buf = new ArrayList<>();
+    untilReader(buf, pr, ')');
+    return Seq.of(buf.toArray());// TODO: change: special seq: counted and info about position
   }
 
   /**
    * <p>
-   * reads until given terminator
+   * reads until given terminator, adding each found object into buffer
    */
   private void untilReader(ArrayList<Object> buf, PosReader pr, int terminator) {
+    int ch;
 
+    while ((ch = skipWhitespace(pr)) != terminator) {
+      switch (ch) {
+      case '(':
+        buf.add(listReader(pr)); //read list and add into buffer
+      break;
+      case '#':
+        break;
+      default:
+      //range checks
+
+      }
+
+      errReader("unmatched character: " + (char) ch);
+    }
+
+  }
+
+  private void errReader(String message) {
+//TODO: throw some custom error, that includes position etc.
+  }
+
+  /**
+   * returns first non-whitespace char
+   */
+  private int skipWhitespace(PosReader pr) {
+    int ch = pr.readChar();
+    while (isWhitespace(ch)) ch = pr.readChar();
+    return ch;
   }
 
   private boolean isWhitespace(int ch) {
