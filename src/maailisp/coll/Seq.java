@@ -20,11 +20,11 @@ import maailisp.core.*;
  * @author maartyl
  * @param <T> collection of what
  */
-public abstract class Seq<T> extends Obj {
+public interface Seq<T> extends Obj {
 
-  public abstract T first();
+  T first();
 
-  public abstract Seq<T> rest();
+  Seq<T> rest();
 
 //  public <R> Seq<R> map(final Function<? super T, R> mapper) {
 //    return Seq.map(this, mapper);
@@ -34,7 +34,7 @@ public abstract class Seq<T> extends Obj {
 //    return Seq.mapRecur(this, mapper);
 //  }
 
-  protected boolean isNil() {
+  default boolean isNil() {
     return false;
   }
 
@@ -180,7 +180,7 @@ public abstract class Seq<T> extends Obj {
     return a;
   }
 
-  protected static <T> Seq<T> ofArray(final T[] arr, final int index) {
+  static <T> Seq<T> ofArray(final T[] arr, final int index) {
     return new Seq<T>() {
       @Override
       public final T first() {
@@ -204,7 +204,7 @@ public abstract class Seq<T> extends Obj {
     public Seq<T> eval();
   }
 
-  static class LazySeq<T> extends Seq<T> {
+  static class LazySeq<T> implements Seq<T> {
 
     LazyRest<T> seqFn;
     Seq<T> cashedSeq = null;
@@ -233,13 +233,13 @@ public abstract class Seq<T> extends Obj {
     }
 
     @Override
-    protected boolean isNil() {
+    public boolean isNil() {
       assureEvaluated();
       return cashedSeq == null;
     }
   }
 
-  static class LazyCons<T> extends Seq<T> {
+  static class LazyCons<T> implements Seq<T> {
 
     T first;
     LazyRest<T> restFn; //doesn't work: restfn is remembered : make its own class

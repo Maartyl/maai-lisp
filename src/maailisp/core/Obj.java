@@ -16,6 +16,6 @@ package maailisp.core;
  *
  * @author maartyl
  */
-public class Obj {
+public interface Obj {
 
 }
