@@ -36,4 +36,10 @@ public class Vector0<T> extends AVector<T> {
     return 0;
   }
 
+  @Override
+  public String toString() {
+    return "[]";
+  }
+
+
 }

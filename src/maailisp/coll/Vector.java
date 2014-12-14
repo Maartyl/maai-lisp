@@ -67,4 +67,14 @@ public interface Vector<T> extends Seq<T> {
    */
   int length();
 
+  /**
+   * empty Stub. Needs to be retyped each time: Java lacks types like Nothing.... (which then turns into whatever necessary)
+   */
+  public static Vector EMPTY = new Vector0<>();
+
+  @SuppressWarnings("unchecked")
+  public static <T> Vector<T> ofSeq(Seq<T> seq) {
+    return Seq.reduce(seq, (Vector<T>) EMPTY, (v, e) -> v.add(e));
+  }
+
 }

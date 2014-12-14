@@ -10,13 +10,32 @@
  */
 package maailisp.coll;
 
+import java.util.Iterator;
+
 /**
  *
  * @author maartyl
  */
-public abstract class AVector<T> implements Vector<T> {
-  //protected methods shared between all classical vectors
+public abstract class AVector<T> implements Vector<T>, Iterable<T> {
 
+  @Override
+  public Iterator<T> iterator() {
+    return new Iterator<T>() {
+      int index;
+
+      @Override
+      public boolean hasNext() {
+        return (index < length());
+      }
+
+      @Override
+      public T next() {
+        return get(index++);
+      }
+    };
+  }
+
+  //protected methods shared between all classical vectors
   protected IndexOutOfBoundsException outOfBounds(int index) {
     return new IndexOutOfBoundsException("Expected: 0 to " + length() + "; got: " + index);
   }
