@@ -11,6 +11,7 @@
 package maailisp.reader;
 
 import java.io.IOException;
+import java.io.PushbackReader;
 import java.io.Reader;
 
 /**
@@ -20,15 +21,19 @@ import java.io.Reader;
  * @author maartyl
  */
 public class PosReader {
-  private final Reader rdr;
+  private final PushbackReader rdr;
   private int row = 1;   //first row is 1
   private int column = 0;//first col is 1 (incremented upon reading first char)
   private int pos = -1;  //the position in stream
   private int lastChar = 0;
   private int curChar = 0;
 
+  private boolean canUnread = false;
+  private int beforeLastForUnread = -1; //this will be assigned to lastChar, upon unread
+  private int beforeColumnForUnreadOnPrevLine = -1; // -"- column; ONLY used if curChar is \n : otherwise: just --;
+
   public PosReader(Reader rdr) {
-    this.rdr = rdr;
+    this.rdr = rdr instanceof PushbackReader ? (PushbackReader) rdr : new PushbackReader(rdr);
   }
 
   public int getRow() {
@@ -69,8 +74,10 @@ public class PosReader {
    */
   public int readNextChar() {
     try {
+      beforeLastForUnread = lastChar;
       lastChar = curChar;
       curChar = rdr.read();
+      canUnread = true;
       pos++;
       while (curChar == '\r') curChar = rdr.read(); //ignore \r: it's useless anyway (sorry, users of old Macs...)
 
@@ -78,10 +85,32 @@ public class PosReader {
 
       if (curChar == '\n') {
         row++;
+        beforeColumnForUnreadOnPrevLine = column;
         column = 0;
       } else column++;
 
       return curChar;
+    } catch (IOException e) {
+      throw maailisp.util.H.sneakyThrow(e); //just rethrow
+    }
+  }
+
+  /**
+   * Works like PushbackReader.unread(c), where c == curChar; Can only be used once
+   */
+  public void unread() {
+    if (!canUnread)
+      throw new UnsupportedOperationException("canot unread: can only be done once before next .read()");
+    try {
+      if (curChar == '\n') {
+        row--;
+        column = beforeColumnForUnreadOnPrevLine;
+      } else column--;
+
+      rdr.unread(curChar);
+      curChar = lastChar;
+      lastChar = beforeLastForUnread;
+
     } catch (IOException e) {
       throw maailisp.util.H.sneakyThrow(e); //just rethrow
     }
