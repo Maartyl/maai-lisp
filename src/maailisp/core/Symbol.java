@@ -16,7 +16,7 @@ import java.util.Objects;
  *
  * @author maartyl
  */
-public class Symbol extends Obj {
+public class Symbol implements Obj {
   private final String name;
   private final String namespace;
 

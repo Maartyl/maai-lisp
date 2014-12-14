@@ -12,18 +12,31 @@ package maailisp.coll;
 
 /**
  * Immutable vector.
- * Net thread safe yet. (Done so, that it could be improved, hopefully)
+ * <p>
+ * Will be used tuples and well, general structures, where position matters.
  *
  * @author maartyl
  * @param <T> Vector of what
  */
-public interface Vector<T> {
+public interface Vector<T> extends Seq<T> {
+
+  @Override
+  public default T first() {
+    return get(0);
+  }
+
+  @Override
+  public default Seq<T> rest() {
+    return Seq.ofVector(this, 1);
+  }
+
+
 
   /**
    * Retrieves
    *
    * @param index
-   * @return
+   * @return associated element
    */
   T get(int index);
 
@@ -46,7 +59,7 @@ public interface Vector<T> {
   Vector<T> add(T elem);
 
   /**
-   * Number 1 bigger then maximal index.
+   * Number 1 bigger then the maximal index.
    * <p>
    * @return the number of elements of this Vector instance
    */
