@@ -75,10 +75,6 @@ public interface Seq<T> extends Obj {
     return Seq.lazy(it.next(), () -> ofIterator(it));
   }
 
-  public static <T> Seq<T> ofArray(final T[] arr) {
-    return ofArray(arr, 0);
-  }
-
   @SafeVarargs
   public static <T> Seq<T> of(final T... arr) {
     return ofArray(arr);
@@ -180,6 +176,10 @@ public interface Seq<T> extends Obj {
     return a;
   }
 
+  public static <T> Seq<T> ofArray(final T[] arr) {
+    return ofArray(arr, 0);
+  }
+
   static <T> Seq<T> ofArray(final T[] arr, final int index) {
     return new Seq<T>() {
       @Override
@@ -194,6 +194,23 @@ public interface Seq<T> extends Obj {
     };
   }
 
+  static <T> Seq<T> ofVector(final Vector<T> vec) {
+    return ofVector(vec, 0);
+  }
+  static <T> Seq<T> ofVector(final Vector<T> vec, final int index) {
+    return new Seq<T>() {
+      @Override
+      public final T first() {
+        return vec.get(index);
+      }
+
+      @Override
+      public final Seq<T> rest() {
+        return index + 1 < vec.length() ? ofVector(vec, index + 1) : null;
+      }
+    };
+  }
+
   public static interface LazyRest<T> {
 
     /**
@@ -203,66 +220,4 @@ public interface Seq<T> extends Obj {
      */
     public Seq<T> eval();
   }
-
-  static class LazySeq<T> implements Seq<T> {
-
-    LazyRest<T> seqFn;
-    Seq<T> cashedSeq = null;
-
-    public LazySeq(LazyRest<T> seqFn) {
-      this.seqFn = seqFn;
-    }
-
-    @Override
-    public final T first() {
-      assureEvaluated();
-      return Seq.first(cashedSeq);
-    }
-
-    @Override
-    public final Seq<T> rest() {
-      assureEvaluated();
-      return Seq.rest(cashedSeq);
-    }
-
-    private void assureEvaluated() {
-      if (seqFn != null) {
-        cashedSeq = seqFn.eval();
-        seqFn = null; //GC friendly + no need for extra boolean
-      }
-    }
-
-    @Override
-    public boolean isNil() {
-      assureEvaluated();
-      return cashedSeq == null;
-    }
-  }
-
-  static class LazyCons<T> implements Seq<T> {
-
-    T first;
-    LazyRest<T> restFn; //doesn't work: restfn is remembered : make its own class
-    Seq<T> cashedRest = null;
-
-    public LazyCons(T first, LazyRest<T> restFn) {
-      this.first = first;
-      this.restFn = restFn;
-    }
-
-    @Override
-    public final T first() {
-      return first;
-    }
-
-    @Override
-    public final Seq<T> rest() {
-      if (restFn != null) {
-        cashedRest = restFn.eval();
-        restFn = null; //GC free + no need for extra boolean
-      }
-      return cashedRest;
-    }
-  }
-
 }
