@@ -59,8 +59,6 @@ import maailisp.coll.Seq;
  - minus : -
  - ERROR : anthing that just can't happen... (takes msg, position and throws exception)
 
-
-
  */
 
 /**
@@ -72,7 +70,8 @@ public class MaaiReader {
   // : also namespace for qualified symbols
   // :: improve namespace concept : make some default "script" contexts etc...
   //
-  //each subReader returns ...
+  private String curNamespace;
+
 
   /**
    * reads s-expressions from given Reader
@@ -119,14 +118,31 @@ public class MaaiReader {
     }
   }
 
+  //parametrize with action to return if nothing was matched; overload for implicit exception
   private Object recognizerReader(int firstChar, PosReader pr) {
     switch (firstChar) {
-    case '(':
+    case '(': //list
       return (listReader(pr)); //read list and add into buffer
-    case '#':
+    case '#': //hash
+      break;
+    case '[': //vector
+      break;
+    case '{': //map (+ info if set (in hashReader))
+      break;
+    case '\'': //quote
+      break;
+    case '~': //unquote
+      break;
+    case '`': //qualified quote
+      break;
+    case '@': //deref / alter vectors/maps in some way?
+      break;
+    case '-': //minus: num: negate; symbol: prepend; whitespace: just MINUS symbol
       break;
     default:
     //range checks (isAlphanumeric...)
+    //isSymbolStart?
+    //isNumber? ...
 
     }
 
@@ -160,5 +176,12 @@ public class MaaiReader {
 //      return true;
 //    default: return false;
 //    }
+  }
+
+  //
+  //------ Tests (simple)
+  //
+  public static void main(String args) {
+
   }
 }
