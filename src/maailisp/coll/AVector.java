@@ -15,8 +15,20 @@ import java.util.Iterator;
 /**
  *
  * @author maartyl
+ * @param <T>
  */
 public abstract class AVector<T> implements Vector<T>, Iterable<T> {
+
+  @Override
+  public boolean isCounted() {
+    return true;
+  }
+
+  @Override
+  public int count() {
+    return length();
+  }
+
 
   @Override
   public Iterator<T> iterator() {

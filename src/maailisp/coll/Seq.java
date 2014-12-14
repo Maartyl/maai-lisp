@@ -38,6 +38,22 @@ public interface Seq<T> extends Obj {
     return false;
   }
 
+  /**
+   * 
+   * @return is .count() O(1)?
+   */
+  default boolean isCounted() {
+    return false;
+  }
+
+  /**
+   * unless isCounted, traverses whole Seq.
+   * @return number of elements in Seq
+   */
+  default int count() {
+    return Seq.reduce(this, 0, (acc, e) -> acc + 1);
+  }
+
   //------------------------------------------
   public static <T> Seq<T> cons(final T first, final Seq<T> rest) {
     return new Seq<T>() {
@@ -55,14 +71,14 @@ public interface Seq<T> extends Obj {
   }
 
   /**
-   * Simple lazy-cons. Not thread safe.
+   * Simple lazy-cons. Not thread safe. (Two threads can realize an element at the same time)
    */
   public static <T> Seq<T> lazy(final T first, final LazyRest<T> restfn) {
     return new LazyCons<>(first, restfn);
   }
 
   /**
-   * Simple lazy-seq. Not thread safe.
+   * Simple lazy-seq. Not thread safe. (Two threads can realize an element at the same time)
    * Doesn't evaluate first until needed. Just delayed.
    * <p>
    */
@@ -139,6 +155,12 @@ public interface Seq<T> extends Obj {
 
   /**
    * foldl.
+   * @param <T>   Seq type: elements to be reduced
+   * @param <Acc> accumulator: left operand of reducing function
+   * @param s
+   * @param acc     initial value
+   * @param reducer
+   * @return last result of reducer
    */
   public static <T, Acc> Acc reduce(Seq<T> s, Acc acc, final java.util.function.BiFunction<Acc, ? super T, Acc> reducer) {
     for (; !isNil(s); s = s.rest())
@@ -171,6 +193,10 @@ public interface Seq<T> extends Obj {
    * Allows to perform some action inside function call. like cleaning up (arg=null)
    * Useful for freeing vars so GC can collect them etc.
    * <p>
+   * @param <T>
+   * @param a   pass through
+   * @param b   ignore, evaluate for side effects
+   * @return a
    */
   public static <T> T ret1(T a, Object b) {
     return a;
@@ -194,7 +220,7 @@ public interface Seq<T> extends Obj {
     };
   }
 
-  static <T> Seq<T> ofVector(final Vector<T> vec) {
+  public static <T> Seq<T> ofVector(final Vector<T> vec) {
     return ofVector(vec, 0);
   }
   static <T> Seq<T> ofVector(final Vector<T> vec, final int index) {
@@ -217,6 +243,7 @@ public interface Seq<T> extends Obj {
      * Function to produce a lazy sequence.
      * Will only be ever evaluated once. (in the context of LazySeq)
      * <p>
+     * @return returns the actual head of Seq, that shouldn't be lazy in .first().
      */
     public Seq<T> eval();
   }
