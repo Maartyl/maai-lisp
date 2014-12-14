@@ -10,6 +10,8 @@
  */
 package maailisp.coll;
 
+import java.util.Objects;
+
 /**
  *
  * @author maartyl
@@ -49,5 +51,19 @@ public class Vector1<T> extends AVector<T> {
   public String toString() {
     return "[" + elem0 + "]";
   }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(this.elem0);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    final Vector1<?> other = (Vector1<?>) obj;
+    return Objects.equals(this.elem0, other.elem0);
+  }
+
 
 }

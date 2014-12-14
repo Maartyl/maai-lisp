@@ -10,6 +10,8 @@
  */
 package maailisp.coll;
 
+import java.util.Objects;
+
 /**
  * Tuple
  *
@@ -53,5 +55,23 @@ public class Vector2<T> extends AVector<T> {
   public String toString() {
     return "[" + elem0 + " " + elem1 + "]";
   }
+
+  @Override
+  public int hashCode() {
+    int hash = 7;
+    hash = 37 * hash + Objects.hashCode(this.elem0);
+    hash = 37 * hash + Objects.hashCode(this.elem1);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    final Vector2<?> other = (Vector2<?>) obj;
+    if (!Objects.equals(this.elem0, other.elem0)) return false;
+    return Objects.equals(this.elem1, other.elem1);
+  }
+
 
 }
