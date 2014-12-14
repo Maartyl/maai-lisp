@@ -12,8 +12,10 @@ package maailisp.coll;
 
 /**
  * Immutable vector.
+ * If indexes were changed to longs, chosen design would allow to have long.maxValue long vectors. (no longer fast, though...)
+ * all changes are of logarithmic complexity, base 32. (for integers: max is ~9.5 : ~constant)
  * <p>
- * Will be used tuples and well, general structures, where position matters.
+ * Will be also used for tuples and well, general structures, where position matters.
  *
  * @author maartyl
  * @param <T> Vector of what

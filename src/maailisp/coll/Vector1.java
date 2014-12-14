@@ -16,7 +16,7 @@ package maailisp.coll;
  */
 public class Vector1<T> extends AVector<T> {
 
-  private T elem0;
+  private final T elem0;
 
   public Vector1(T elem0) {
     this.elem0 = elem0;
