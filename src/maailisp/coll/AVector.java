@@ -55,22 +55,4 @@ public abstract class AVector<T> implements Vector<T>, Iterable<T> {
     return new IndexOutOfBoundsException("Expected: 0 to " + length() + "; got: " + index);
   }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("[");
-    Iterator<T> it = this.iterator();
-    sb.append(it.next()); //Vector0 overrides
-    for (; it.hasNext();) {
-      T e = it.next();
-      sb.append(" ");
-      sb.append(e);
-    }
-    sb.append("]");
-    return sb.toString();
-  }
-
-
-
-
 }
