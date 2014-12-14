@@ -35,10 +35,26 @@ public abstract class AVector<T> implements Vector<T>, Iterable<T> {
     };
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+    Iterator<T> it = this.iterator();
+    sb.append(it.next()); //Vector0 overrides
+    for (; it.hasNext();) {
+      T e = it.next();
+      sb.append(" ");
+      sb.append(e);
+    }
+    sb.append("]");
+    return sb.toString();
+  }
+
   //protected methods shared between all classical vectors
   protected IndexOutOfBoundsException outOfBounds(int index) {
     return new IndexOutOfBoundsException("Expected: 0 to " + length() + "; got: " + index);
   }
+
 
 
 }
