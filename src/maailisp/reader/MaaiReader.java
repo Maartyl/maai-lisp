@@ -10,7 +10,6 @@
  */
 package maailisp.reader;
 
-import java.io.BufferedReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import maailisp.coll.Seq;
@@ -18,7 +17,7 @@ import maailisp.coll.Seq;
 /*
  the idea is this:
  upon meeting "start character" (depending on context), I will trigger new Reader, specific for given state, and that will
- readEager that sub part; otherwise rest is string, theoretically could be just buffered and parsed by regex:: (not really)
+ read that sub part; otherwise rest is string, theoretically could be just buffered and parsed by regex:: (not really)
 
  could be just functions instead of readers
 
@@ -122,18 +121,18 @@ public class MaaiReader {
    * (this method is public but should be used with caution)
    * <p>
    * @param r source; ;; PosReader is not a Java Reader
-   * @return the readEager object || MaaiReader.EOFMark (it is possible to readEager null <- is valid)
+   * @return the read object || MaaiReader.EOFMark (it is possible to read null <- is valid)
    */
   public Object read1(PosReader r) {
     return recognizerReader(skipWhitespace(r), r);
   }
 
   private void topLevelReader(ArrayList<Object> buf, PosReader pr) {
-    untilReader(buf, pr, -1); //just readEager to end
+    untilReader(buf, pr, -1); //just read to end
   }
 
   /**
-   * not lazy. (and shouldn't... can't be: stateful reader)
+   * not lazy. (and shouldn't... can't be: stateful posReader)
    */
   private Seq<Object> listReader(PosReader pr) {
     int row = pr.getRow();
@@ -151,12 +150,14 @@ public class MaaiReader {
     int ch;
 
     //curChar:  ...45) ... I need the paren for both terminating the number (or symbol) and the whole list; etc.
-    while (pr.getCurrentChar() != terminator && (ch = skipWhitespace(pr)) != terminator) {
+    // ^ should be handled by pr.unread(); more generic and easier to reason about
+    //
+    while (/*pr.getCurrentChar() != terminator &&*/(ch = skipWhitespace(pr)) != terminator) {
       buf.add(recognizerReader(ch, pr));
     }
   }
 
-  //parametrize with action to return if nothing was matched; overload for implicit exception
+  //TODO: parametrize with action to return if nothing was matched; overload for implicit exception
   private Object recognizerReader(int firstChar, PosReader pr) {
     switch (firstChar) {
     case '(': //list
@@ -186,13 +187,13 @@ public class MaaiReader {
 
     }
 
-    errReader("unmatched character: " + (char) firstChar + "(" + firstChar + ")", pr);
+    errReader("unmatched input character: " + (char) firstChar + "(" + firstChar + ")", pr);
     return null;
   }
 
   private void errReader(String message, final PosReader pr) {
 //TODO: throw some custom error, that includes position etc.
-    // ... or just return "error" object? ... nope, I chose: First error is error policy; anything after: not necessarily.
+    // ... or just return "error" object? ... nope, I chose: First error is error policy; anything after: not necessarily read.
     // -> throw at first error, ignore rest.
   }
 
