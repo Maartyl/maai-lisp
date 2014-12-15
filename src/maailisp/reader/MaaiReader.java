@@ -11,13 +11,14 @@
 package maailisp.reader;
 
 import java.io.BufferedReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import maailisp.coll.Seq;
 
 /*
  the idea is this:
  upon meeting "start character" (depending on context), I will trigger new Reader, specific for given state, and that will
- read that sub part; otherwise rest is string, theoretically could be just buffered and parsed by regex:: (not really)
+ readEager that sub part; otherwise rest is string, theoretically could be just buffered and parsed by regex:: (not really)
 
  could be just functions instead of readers
 
@@ -74,24 +75,61 @@ public class MaaiReader {
 
 
   /**
-   * reads s-expressions from given Reader
-   * I need this function to be lazy, but I don't know how to achieve it yet.
+   * eagerly reads s-expressions from given Reader
    * <p>
    * //@throws IOException
    * @param r
    * @return each object is a top-level s-expression read from stream r
    */
-  public Seq<Object> read(BufferedReader r) {
+  public Seq<Object> readEager(Reader r) {
     PosReader prdr = new PosReader(r);
 
     ArrayList<Object> buffer = new ArrayList<>();
     topLevelReader(buffer, prdr);
 
-    return Seq.of(buffer.toArray()); //TODO: change : better implementation of seq: counted etc.
+    return Seq.of(buffer.toArray());
+  }
+
+  /**
+   * lazily reads s-expressions from given Reader
+   * <p>
+   * //@throws IOException
+   * <p>
+   * @param r
+   * @return each object is a top-level s-expression read from stream r
+   */
+  public Seq<Object> readLazy(Reader r) {
+    return readLazy(new PosReader(r));
+  }
+
+  /**
+   * lazily reads s-expressions from given PosReader
+   * <p>
+   * //@throws IOException
+   * <p>
+   *
+   * @param r
+   * @return each object is a top-level s-expression read from stream r
+   */
+  public Seq<Object> readLazy(PosReader r) {
+    Object ret = read1(r);
+    if (ret == EOFMark) return null;
+    return Seq.lazy(ret, () -> readLazy(r));
+  }
+
+  /**
+   * reads 1 expression (top-level of start of given Reader stream).
+   * (this method is public but should be used with caution)
+   * <p>
+   * @param r source; ;; PosReader is not a Java Reader
+   * @return the readEager object || MaaiReader.EOFMark (it is possible to readEager null <- is valid)
+   */
+  public Object read1(PosReader r) {
+    return recognizerReader(skipWhitespace(r), r);
   }
 
   private void topLevelReader(ArrayList<Object> buf, PosReader pr) {
-    untilReader(buf, pr, -1); //just read to end
+    untilReader(buf, pr, -1); //just readEager to end
   }
 
   /**
@@ -139,6 +177,8 @@ public class MaaiReader {
       break;
     case '-': //minus: num: negate; symbol: prepend; whitespace: just MINUS symbol
       break;
+    case -1: return EOFMark;
+
     default:
     //range checks (isAlphanumeric...)
     //isSymbolStart?
@@ -177,6 +217,14 @@ public class MaaiReader {
 //    default: return false;
 //    }
   }
+  public static final Object EOFMark = new Object() {
+
+    @Override
+    public String toString() {
+      return "EOFMark";
+    }
+
+  };
 
   //
   //------ Tests (simple)
