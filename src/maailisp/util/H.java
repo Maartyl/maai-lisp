@@ -20,6 +20,19 @@ public class H {
   }
 
   /**
+   * Allows to perform some action inside function call. like cleaning up (arg=null)
+   * Useful for freeing vars so GC can collect them etc.
+   * <p>
+   * @param <T>
+   * @param a   pass through
+   * @param b   ignore, evaluate for side effects
+   * @return a
+   */
+  public static <T> T ret1(T a, Object b) {
+    return a;
+  }
+
+  /**
    * http://www.mail-archive.com/javaposse@googlegroups.com/msg05984.html
    * <p>
    * "throw H.sneakyThrow(ex)" to fix Java exception handling bug
